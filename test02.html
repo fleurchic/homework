@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ko">
+    <head>
+        <!-- Webpage Title -->
+        <title>플스4프로 팝니다</title>
+
+        <!-- Required meta tags -->
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+              integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+              crossorigin="anonymous">
+
+        <!-- JS -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+                integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+                crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+                integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+                crossorigin="anonymous"></script>
+
+        <!-- 구글폰트 -->
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+        <style type="text/css">
+            * {
+                font-family: 'Noto Sans KR', sans-serif;
+            }
+
+            .wrap {
+                width: 700px;
+                margin: auto;
+            }
+
+            /*.img {*/
+            /*    background-image: url('http://img.danawa.com/prod_img/500000/458/878/img/6878458_1.jpg?shrink=500:500&_v=20190128184020');*/
+            /*    background-size: cover;*/
+            /*    background-position: center;*/
+            /*    width: 500px;*/
+            /*    height: 500px;*/
+            /*}*/
+
+            .info {
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+
+            .price {
+                margin-top: 10px;
+                margin-bottom: 30px;
+                text-align: right;
+            }
+
+            h1, h5 {
+                display: inline;
+            }
+
+            .order {
+                text-align: center;
+                margin-top: 20px;
+                margin-bottom: 20px;
+            }
+
+            .fontgray {
+                color: gray;
+            }
+
+            .fontblue {
+                color: blue;
+            }
+        </style>
+
+        <script>
+            $(document).ready(function () {
+                exchangecheck();
+                tablehide();
+            });
+
+            //환율확인 스크립트
+            function exchangecheck() {
+                $.ajax({
+                    type: "GET",
+                    url: "https://api.manana.kr/exchange/rate.json",
+                    data: {},
+                    success: function (response) {
+                        let exrate = response[1]['rate'];
+                        let dollarprice = 250000 / exrate
+                        let dollarfixed = dollarprice.toFixed(0);
+                        $('#pricedollars').text(`${dollarfixed}달러`);
+                        $('#priceexrate').text(`(달러- 환율: ${exrate}원)`);
+                    }
+                })
+            }
+
+            //validation 스크립트
+            // Example starter JavaScript for disabling form submissions if there are invalid fields
+            (function () {
+                'use strict';
+                window.addEventListener('load', function () {
+                    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                    var forms = document.getElementsByClassName('needs-validation');
+                    // Loop over them and prevent submission
+                    var validation = Array.prototype.filter.call(forms, function (form) {
+                        submit_button.addEventListener('click', function (event) {
+                            if (form.checkValidity() === false) {
+                                event.preventDefault();
+                                event.stopPropagation();
+                            }
+                            form.classList.add('was-validated');
+                        }, false);
+                    });
+                }, false);
+            })();
+
+            // 주문내용 검증
+            let ordercount = 0
+
+            function order() {
+                let who = $("#order-name").val();
+                let phonenumber = $("#order-phone").val();
+                let what = $("#order-count").val();
+                let whereto = $("#order-address").val();
+                let phonenumber2 = phonenumber.split('-')[0] + '-****-' + phonenumber.split('-')[2]
+
+                if (who === '') {
+                    alert('이름을 입력하세요');
+                    $("#order-name").focus();
+                } else if (phonenumber === '') {
+                    alert('전화번호를 입력하세요');
+                    $("#order-phone").focus();
+                } else if (!isCellphone(phonenumber)) {
+                    alert('전화번호를 다시 입력해주세요.\n010-0000-0000 형식으로 입력해주세요.');
+                    $("#order-phone").focus();
+                } else if (what === '') {
+                    alert('구성품을 선택하세요');
+                    $("#order-count").focus();
+                } else if (whereto === '') {
+                    alert('주소를 입력하세요');
+                    $("#order-address").focus();
+                } else {
+                    alert('주문이 완료되었습니다.');
+                    ordercount += 1;
+                    let tempHtml = `<tr>
+                                    <th scope="row">${ordercount}</th>
+                                    <td>${who}</td>
+                                    <td>${phonenumber2}</td>
+                                    <td>${what}</td>
+                                </tr>`;
+                    $('#order-list-table').append(tempHtml);
+                    tableshow();
+                }
+            }
+
+            // 전화번호 유효성 체크
+            function isCellphone(p) {
+                let regExp = /^(01[016789]{1}|02|0[3-9]{1}[0-9]{1})[-][0-9]{3,4}[-][0-9]{4}$/;
+                return regExp.test(p);
+            }
+
+            // 테이블 숨기기 스크립트
+            function tablehide() {
+                if (ordercount == 0) {
+                    $('.order-list').hide()
+                }
+            }
+
+            function tableshow() {
+                $('.order-list').show()
+            }
+
+        </script>
+    </head>
+    <body>
+        <form class="needs-validation" novalidate>
+            <div class="wrap">
+                <div id="carousel" class="carousel slide" data-ride="carousel">
+                    <ol class="carousel-indicators">
+                        <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+                        <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+                    </ol>
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <img class="d-block w-100"
+                                 src="http://image.kyobobook.co.kr/newimages/giftshop_new/goods/400/1977/hot1559834202369.jpg"
+                                 alt="First slide">
+                        </div>
+                        <div class="carousel-item">
+                            <img class="d-block w-100"
+                                 src="http://img.danawa.com/prod_img/500000/458/878/img/6878458_1.jpg?shrink=500:500&_v=20190128184020"
+                                 alt="Second slide">
+                        </div>
+                    </div>
+                    <a class="carousel-control-prev" href="#carousel" role="button" data-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="carousel-control-next" href="#carousel" role="button" data-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </div>
+                <div class="title">
+                    <h2>Play Station 4 Pro (흰색) 팝니다</h2>
+                    <h5>
+                        <span class="badge badge-danger">인기폭발</span>
+                        <span class="badge badge-danger">매진임박</span>
+                    </h5>
+                </div>
+                <div class="price">
+                    <p>
+                    <h5>가격: 250,000원 혹은 <span id="pricedollars"></span></h5>
+                    </p>
+                    <p><i><span id="priceexrate"></span></i></p>
+                </div>
+                <div class="info">
+                    <p><u>여가 시간을 윤택하게</u> 만들어주고 <u>삶의 질을 비약적으로 향상</u>시켜 주는 <u>현대인의 필수품</u> 플스4 프로 판매합니다.
+                        게임만 할 수 있는 게 아니라 DVD 플레이어 역할도 할 수 있고, 넷플릭스나 유튜브 등에 접속할 수도 있어요!</p>
+                    <p>2018년 7월경 구입 후 거의 사용하지 않아서 <u>새제품이나 다름 없습니다!!!</u> 산뜻한 하얀색이라서 집에 갖다놓으면 인테리어에도 좋아요. 사세요!!</p>
+                    <p>구성품: PS4프로 본체(1TB) / 컨트롤러 1개 / 게임디스크 1장</p>
+                    <p class="fontgray">***진짜로 팝니다. 문의는 슬랙으로! 플스 하나 장만하세요***</p>
+                    <hr class="mb-4">
+                </div>
+                <div class="order">
+                    <h4 class="mb-3" align='left'>주문하기</h4>
+                    <div class="form-row">
+                        <div class="col-md-6 mb-3">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">이름</span>
+                                </div>
+                                <input type="text" class="form-control" id="order-name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">전화번호</span>
+                                </div>
+                                <input type="text" class="form-control" id="order-phone" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <label class="input-group-text">구성품</label>
+                        </div>
+                        <select class="custom-select" id="order-count" required>
+                            <option selected value=""> -- 구성품을 선택하세요 --</option>
+                            <option value="a. 본체만">a. 본체만 (-50,000원)</option>
+                            <option value="b. 본체 + 컨트롤러">b. 본체 + 컨트롤러 1개 (-20,000원)</option>
+                            <option value="c. 본체 + 컨트롤러 + 디스크">c. 본체 + 컨트롤러 1개 + 게임디스크 1장</option>
+                        </select>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">주소</span>
+                        </div>
+                        <input type="text" class="form-control" id="order-address" required>
+                    </div>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">이메일</span>
+                        </div>
+                        <input type="email" class="form-control" id="email" placeholder="(선택입) you@email.com">
+                    </div>
+                    <button onclick="order()" type="button" class="btn btn-primary" id="submit_button">주문하기
+                    </button>
+                </div>
+                <div class="order-list">
+                    <hr class="mb-4">
+                    <h4 class="mb-3" align='left'>주문내역</h4>
+                    <table class="table table-sm table-hover">
+                        <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">이름</th>
+                            <th scope="col">전화번호</th>
+                            <th scope="col">구성</th>
+                        </tr>
+                        </thead>
+                        <tbody id="order-list-table">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </form>
+    </body>
+</html>
